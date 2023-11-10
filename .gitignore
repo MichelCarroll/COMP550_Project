@@ -1,0 +1,7 @@
+load-transcripts
+eod_data_cache/**
+**/.DS_Store
+.env
+*.zip
+**/.ipynb_checkpoints
+transcript_data/**
