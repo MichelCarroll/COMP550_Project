@@ -15,6 +15,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+YEARS = [2021]
+
 EOD_API_KEY = os.environ['EOD_API_KEY']
 
 class TextBlock(BaseModel):
@@ -175,7 +177,7 @@ def save_transcript_from_url(url: str, skip_if_exists: bool = True):
         f.write(transcript.model_dump_json())
 
 print("Pulling transcript URLs from sitemap...")
-transcript_urls = all_transcript_urls_from_sitemap(years=[2021])
+transcript_urls = all_transcript_urls_from_sitemap(years=YEARS)
 print(f"Processing total of {len(transcript_urls)} transcripts")
 for transcript_url in transcript_urls:
     print(f"Processing {transcript_url}...")
