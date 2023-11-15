@@ -5,3 +5,7 @@ eod_data_cache/**
 *.zip
 **/.ipynb_checkpoints
 transcript_data/**
+Llama-2-7b 
+llama.cpp
+.*
+*.gguf
