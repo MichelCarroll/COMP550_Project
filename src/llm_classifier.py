@@ -16,7 +16,7 @@ tokenizer = LlamaTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
 
 TRANSCRIPTS_DATA_PATH = 'transcript_data'
 DEVELOPMENT_SET_SPLIT_RATIO = 0.2
-NUMBER_STANDARD_DEVIATIONS_THRESHOLD = 3
+NUMBER_STANDARD_DEVIATIONS_THRESHOLD = 2
 
 def load_all_transcripts() -> list[Transcript]:
     all_transcripts: list[Transcript] = []
@@ -39,8 +39,8 @@ development_set_labels: list[Prediction] = [
     for t in development_set_transcripts
 ]
 
-# from collections import Counter
-# print("Label counts", Counter(development_set_labels))
+from collections import Counter
+print("Label counts", Counter(development_set_labels))
 
 first_transcript = development_set_transcripts[0]
 

@@ -8,12 +8,11 @@ def true_stock_direction(transcript: Transcript, standard_deviation_multiples: f
     if before_price == None or after_price == None:
         return None 
     
-    low_threshold = before_price - standard_deviation_multiples * transcript.daily_volatility
-    high_threshold = before_price + standard_deviation_multiples * transcript.daily_volatility
-
-    if after_price > high_threshold:
+    return_between_two_days = (after_price - before_price) / after_price
+    
+    if return_between_two_days > standard_deviation_multiples * transcript.daily_volatility:
         return Prediction.Up
-    elif after_price < low_threshold:
+    elif return_between_two_days < -(standard_deviation_multiples * transcript.daily_volatility):
         return Prediction.Down
     
     return Prediction.Same
