@@ -3,9 +3,8 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import requests
 import re
-from pydantic import BaseModel
 from typing import List, Optional, Tuple
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 from dateutil.parser import parse as parse_datetime
 from tenacity import retry, stop_after_attempt, wait_random_exponential
 
@@ -15,27 +14,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from entities import TextBlock, Transcript
+
 YEARS = [2021]
 
 EOD_API_KEY = os.environ['EOD_API_KEY']
-
-class TextBlock(BaseModel):
-    section: str
-    speaker: str
-    text: str
-
-class Transcript(BaseModel):
-    url: str
-    headline: Optional[str] = None
-    event_time: Optional[datetime] = None
-    company_name: Optional[str] = None 
-    company_ticker: Optional[str] = None
-    fiscal_quarter: Optional[str] = None
-    daily_volatility: Optional[float] = None
-    closing_price_day_before: Optional[Tuple[date, float]] = None
-    closing_price_day_of: Optional[Tuple[date, float]] = None
-    closing_price_day_after: Optional[Tuple[date, float]] = None
-    text_blocks: List[TextBlock] = []
 
 
 def transcript_urls_from_sitemap(year: int, month: int) -> list[str]:

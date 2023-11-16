@@ -8,3 +8,5 @@ tenacity==8.2.3
 python-dotenv==1.0.0
 replicate==0.18.1
 transformers==4.34.1
+tqdm==4.66.1
+pytz==2023.3.post1

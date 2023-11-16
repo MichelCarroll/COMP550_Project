@@ -11,29 +11,43 @@ def classify(text):
         data=json.dumps({
             "model": ACTIVE_MODEL,
             "stream": False,
-            "system": "You are a financial analyst, determining what effect a portion of an earnings call transcript will have on the company's stock price. Be as critical and skeptical as possible, not taking what they say at face value. Respond with one of: UP, DOWN, SAME", 
             "options": {
                 "temperature": 0.25,
                 "num_predict": 10,
                 "stop": ["\n"],
             },
+            "template": "{{ .Prompt }}",
             "prompt": f"""
-    [INST]The company has exceeded its expectations in the past quarter[/INST]
-    UP
-    [INST]The company has run into a lot of issues this year.[/INST]
-    DOWN
-    [INST]The company will continue its steady course.[/INST]
-    SAME
-    [INST]{text}[/INST]
-    """})
+[INST] <<SYS>>You are a financial analyst, determining what effect a portion of an earnings call transcript will have on the company's stock price. Be as critical and skeptical as possible, not taking what they say at face value. Respond with one of: UP, DOWN, SAME<</SYS>> The company has exceeded its expectations in the past quarter[/INST]
+Rating: UP
+[INST]The company has run into a lot of issues this year.[/INST]
+Rating: DOWN
+[INST]The company will continue its steady course.[/INST]
+Rating: SAME
+[INST]{text}[/INST]
+Rating: """})
     )
 
     return output.json()['response']
 
+def summarize(text): 
 
+    output = requests.post(
+        url='http://localhost:11434/api/generate',
+        data=json.dumps({
+            "model": ACTIVE_MODEL,
+            "stream": False,
+            "options": {
+                "temperature": 0.25,
+                "num_predict": 1000,
+                "stop": [],
+            },
+            "template": "{{ .Prompt }}",
+            "prompt": f"""[INST] <<SYS>>You are a financial analyst, determining what effect a portion of an earnings call transcript will have on the company's stock price. Summarize in ONE SENTENCE how this portion will affect the stock prices.<</SYS>> {text}[/INST] Sentence: """})
+    )
+    return output.json()['response']
 
-response = classify(text="""
-Thanks, James. For the second quarter, revenue of $809 million and adjusted EBITDA of $186.2 million were just a bit ahead of what we had indicated early last month. GAAP earnings per share were $2.13 and included a $19 million or $0.33 benefit from tax legislation impacts, primarily in the UK. Adjusted EPS, which excludes the tax items, amortization expense and non-operating pension income, as well as other items noted in the reconciliation at the back of our press release, was $2.11. Operationally, we continue to build upon our strong foundation and have delivered another solid quarter.
+response = classify(text="""Thanks, James. For the second quarter, revenue of $809 million and adjusted EBITDA of $186.2 million were just a bit ahead of what we had indicated early last month. GAAP earnings per share were $2.13 and included a $19 million or $0.33 benefit from tax legislation impacts, primarily in the UK. Adjusted EPS, which excludes the tax items, amortization expense and non-operating pension income, as well as other items noted in the reconciliation at the back of our press release, was $2.11. Operationally, we continue to build upon our strong foundation and have delivered another solid quarter.
 
 Looking at total company performance, revenue continues to trend very positively with growth sequentially of over $50 million from Q1. On a year-over-year basis, revenues grew 71% or 65% organically with strength in all three segments. Order trends also continue to be robust. We exceeded $1 billion in orders during Q2, and our backlog is at a similar amount. Our 23% adjusted EBITDA for Q2 was a substantial increase over Q1 as well as Q2 of 2020. We sequentially expanded margins meaningfully in each segment. By the way, all margin values I will discuss are on an organic basis as well, meaning, excluding any acquisitions, disposition and FX impacts.
 
