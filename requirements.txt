@@ -10,3 +10,4 @@ replicate==0.18.1
 transformers==4.34.1
 tqdm==4.66.1
 pytz==2023.3.post1
+datasets==2.15.0

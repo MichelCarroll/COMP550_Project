@@ -40,8 +40,17 @@ class Transcript(BaseModel):
 
         return answer_texts
 
-
 class Prediction(Enum):
     Up = "UP"
     Down = "DOWN"
     Same = "SAME"
+
+
+class DataPoint(BaseModel):
+    transcript: Transcript
+    true_label: Prediction
+
+class Datasets(BaseModel):
+    training: list[DataPoint]
+    development: list[DataPoint]
+    test: list[DataPoint]

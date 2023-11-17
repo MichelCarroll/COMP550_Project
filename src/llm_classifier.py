@@ -1,49 +1,19 @@
-
-from entities import Transcript, Prediction
-from evaluation import true_stock_direction
-import os 
+from collections import Counter
+from entities import Transcript, Prediction, Datasets, DataPoint
+from data_loading import load_data_splits
 from tqdm import tqdm
-import pytz
 import json
-from transformers import LlamaTokenizer
+from utils import llama2_token_length
 from dotenv import load_dotenv
 load_dotenv()
 
 import requests
 
-tokenizer = LlamaTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
-
-utc = pytz.UTC
-
-TRANSCRIPTS_DATA_PATH = 'transcript_data'
-DEVELOPMENT_SET_SPLIT_RATIO = 0.2
 NUMBER_STANDARD_DEVIATIONS_THRESHOLD = 2
 
-def load_all_transcripts() -> list[Transcript]:
-    all_transcripts: list[Transcript] = []
-    for file in tqdm(os.listdir(TRANSCRIPTS_DATA_PATH), desc="Loading transcripts into memory"):
-        with open(f"{TRANSCRIPTS_DATA_PATH}/{file}") as f:
-            if not file.endswith('.json'):
-                continue 
-            all_transcripts.append(Transcript.model_validate_json(f.read()))
-    return all_transcripts
+datasets: Datasets = load_data_splits()
 
-transcripts = load_all_transcripts()
-transcripts.sort(key=lambda t: t.event_time.replace(tzinfo=utc))
-
-split_n = int(DEVELOPMENT_SET_SPLIT_RATIO * len(transcripts))
-development_set_transcripts: list[Transcript] = transcripts[:split_n]
-test_set_transcripts: list[Transcript] = transcripts[split_n:]
-
-development_set_labels: list[Prediction] = [
-    true_stock_direction(transcript=t, standard_deviation_multiples=NUMBER_STANDARD_DEVIATIONS_THRESHOLD) 
-    for t in development_set_transcripts
-]
-
-from collections import Counter
-print("Label counts", Counter(development_set_labels))
-
-first_transcript = development_set_transcripts[0]
+print("Label counts", Counter([d.true_label for d in datasets.development]))
 
 ACTIVE_MODEL = 'llama2:7b'
 
@@ -106,7 +76,7 @@ class LLMModel:
 
 
 def filter_answer(answer: str, token_length_low_threshold: int = 20, token_length_high_threshold: int = 1000) -> bool:
-    text_token_length = len(tokenizer(answer)['input_ids'])
+    text_token_length = llama2_token_length(answer)
     return text_token_length >= token_length_low_threshold and text_token_length <= token_length_high_threshold
 
 
@@ -157,14 +127,14 @@ def llm_classifier_with_averaging(
             result = llm_model.classify(answer)
         except:
             continue 
-        
-        print("Individual answer: ", result)
         if result == Prediction.Up:
             results.append(1)
         elif result == Prediction.Down:
             results.append(-1)
 
     average_result = sum(results) / len(results)
+
+    print("Results: ", results)
     print("Average result: ", average_result)        
 
     answer = Prediction.Same
@@ -176,22 +146,22 @@ def llm_classifier_with_averaging(
     return answer
     
 
-def evaluate(transcript: Transcript, true_label: Prediction) -> bool:
+def evaluate(datapoint: DataPoint) -> bool:
     model = LLMModel(model_name=ACTIVE_MODEL)
     try:
-        result = llm_classifier_with_averaging(llm_model=model, transcript=transcript)
+        result = llm_classifier_with_averaging(llm_model=model, transcript=datapoint.transcript)
     except Exception as e:
         print("Error occured: ", e)
         return False 
-    print(f"Prediction: {result} Actual: {true_label}")
-    return result == true_label
+    print(f"Prediction: {result} Actual: {datapoint.true_label}")
+    return result == datapoint.true_label
 
 number_of_transcripts_to_evaluate = 10
-transcripts_to_evaluate = list(zip(development_set_transcripts, development_set_labels))[0:number_of_transcripts_to_evaluate]
+transcripts_to_evaluate = datasets.development[0:number_of_transcripts_to_evaluate]
 
 results = [
-    evaluate(transcript=transcript, true_label=true_label) 
-    for transcript, true_label in tqdm(transcripts_to_evaluate, desc="Evaluating transcripts")
+    evaluate(datapoint=datapoint) 
+    for datapoint in tqdm(transcripts_to_evaluate, desc="Evaluating transcripts")
 ]
 
 correct_predictions = sum(results)
