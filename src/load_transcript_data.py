@@ -52,11 +52,9 @@ def cached_ticker_eod_data(ticker: str) -> dict:
     if os.path.exists(file_path):
         with open(file_path, 'r') as f:
             return json.loads(f.read())
-        
     data = ticker_eod_data(ticker=ticker)
     with open(file_path, 'w') as f:
         f.write(json.dumps(data))
-
     return data
 
 @retry(

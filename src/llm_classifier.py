@@ -1,18 +1,19 @@
-from transformers import LlamaTokenizer
+
 from entities import Transcript, Prediction
 from evaluation import true_stock_direction
 import os 
 from tqdm import tqdm
 import pytz
 import json
+from transformers import LlamaTokenizer
 from dotenv import load_dotenv
 load_dotenv()
 
 import requests
 
-utc = pytz.UTC
- 
 tokenizer = LlamaTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
+
+utc = pytz.UTC
 
 TRANSCRIPTS_DATA_PATH = 'transcript_data'
 DEVELOPMENT_SET_SPLIT_RATIO = 0.2
@@ -103,7 +104,13 @@ class LLMModel:
         )
         return output.json()['response']
 
-def llm_classifier(
+
+def filter_answer(answer: str, token_length_low_threshold: int = 20, token_length_high_threshold: int = 1000) -> bool:
+    text_token_length = len(tokenizer(answer)['input_ids'])
+    return text_token_length >= token_length_low_threshold and text_token_length <= token_length_high_threshold
+
+
+def llm_classifier_with_metasummary(
         transcript: Transcript, 
         llm_model: LLMModel, 
         verbose: bool = False,
@@ -112,21 +119,11 @@ def llm_classifier(
         answer_token_length_high_threshold: int = 1000
     ) -> Prediction:
 
-    answer_texts: list[str] = []
-    last_block_was_analyst: bool = False
-
-    for block in transcript.text_blocks:
-        if block.section == 'Questions and Answers':
-            if 'Operator' in block.speaker:
-                continue 
-            elif last_block_was_analyst:
-                text_token_length = len(tokenizer(block.text)['input_ids'])
-                if text_token_length >= answer_token_length_low_threshold and text_token_length <= answer_token_length_high_threshold:
-                    answer_texts.append(block.text)
-                last_block_was_analyst = False 
-            elif 'Analyst' in block.speaker:
-                last_block_was_analyst = True
-
+    answer_texts: list[str] = [
+        t for t in transcript.answer_texts() 
+        if filter_answer(answer=t, token_length_low_threshold=answer_token_length_low_threshold, token_length_high_threshold=answer_token_length_high_threshold)
+    ]
+    
     question_summaries = []    
     for answer in tqdm(answer_texts[:max_questions_to_summary], desc="Summarizing answers into one sentence", disable=not verbose):
         summary = llm_model.summarize_into_one_sentence(answer)
@@ -139,10 +136,50 @@ def llm_classifier(
     result = llm_model.classify(super_summary)
     return result
 
+
+def llm_classifier_with_averaging(
+        transcript: Transcript, 
+        llm_model: LLMModel, 
+        verbose: bool = False,
+        max_questions_to_summary: int = 20, 
+        answer_token_length_low_threshold: int = 20, 
+        answer_token_length_high_threshold: int = 1000
+    ) -> Prediction:
+
+    answer_texts: list[str] = [
+        t for t in transcript.answer_texts() 
+        if filter_answer(answer=t, token_length_low_threshold=answer_token_length_low_threshold, token_length_high_threshold=answer_token_length_high_threshold)
+    ]
+    
+    results: list[int] = []
+    for answer in tqdm(answer_texts[:max_questions_to_summary], desc="Summarizing answers into one sentence", disable=not verbose):
+        try:
+            result = llm_model.classify(answer)
+        except:
+            continue 
+        
+        print("Individual answer: ", result)
+        if result == Prediction.Up:
+            results.append(1)
+        elif result == Prediction.Down:
+            results.append(-1)
+
+    average_result = sum(results) / len(results)
+    print("Average result: ", average_result)        
+
+    answer = Prediction.Same
+    if average_result > 1/3:
+        answer = Prediction.Up
+    elif average_result < -1/3:
+        answer = Prediction.Down
+
+    return answer
+    
+
 def evaluate(transcript: Transcript, true_label: Prediction) -> bool:
     model = LLMModel(model_name=ACTIVE_MODEL)
     try:
-        result = llm_classifier(llm_model=model, transcript=transcript)
+        result = llm_classifier_with_averaging(llm_model=model, transcript=transcript)
     except Exception as e:
         print("Error occured: ", e)
         return False 
