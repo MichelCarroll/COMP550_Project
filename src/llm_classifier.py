@@ -15,12 +15,14 @@ datasets: Datasets = load_data_splits()
 
 print("Label counts", Counter([d.true_label for d in datasets.development]))
 
-ACTIVE_MODEL = 'llama2:7b'
+# ACTIVE_MODEL = 'llama2:7b'
+ACTIVE_CLASSIFICATION_MODEL = 'llama:7b-fine-tune-v1'
+ACTIVE_SUMMARIZATION_MODEL = 'llama2:7b'
+
 
 class LLMModel:
 
-    def __init__(self, model_name: str, max_question_summary_token_length: int = 100, classification_temperature: float = 0, summarization_temperature: float = 0.2) -> None:
-        self._model_name = model_name
+    def __init__(self, max_question_summary_token_length: int = 100, classification_temperature: float = 0, summarization_temperature: float = 0.2) -> None:
         self._classification_temperature = classification_temperature
         self._summarization_temperature = summarization_temperature
         self._max_question_summary_token_length = max_question_summary_token_length
@@ -29,7 +31,7 @@ class LLMModel:
         output = requests.post(
             url='http://localhost:11434/api/generate',
             data=json.dumps({
-                "model": self._model_name,
+                "model": ACTIVE_CLASSIFICATION_MODEL,
                 "stream": False,
                 "options": {
                     "temperature": self._classification_temperature,
@@ -39,13 +41,7 @@ class LLMModel:
                 "template": "{{ .Prompt }}",
                 "prompt": f"""
     [INST] <<SYS>>You are a financial analyst, determining what effect an earnings call will have on the company's stock price, based on a summary of one. Be as critical and skeptical as possible, and remember that the market may disproportionally react to small unexpected details. Respond with one of: {Prediction.Up.value}, {Prediction.Down.value}, {Prediction.Same.value}<</SYS>> {text}[/INST]
-    Prediction (one of UP, DOWN, SAME): {Prediction.Up.value}
-    [INST]The company has run into a lot of issues this year.[/INST]
-    Prediction (one of UP, DOWN, SAME): {Prediction.Down.value}
-    [INST]The company will continue its steady course.[/INST]
-    Prediction (one of UP, DOWN, SAME): {Prediction.Same.value}
-    [INST]{text}[/INST]
-    Prediction: """})
+    Prediction (one of UP, DOWN, SAME): """})
         )
 
         response = output.json()['response']
@@ -62,7 +58,7 @@ class LLMModel:
         output = requests.post(
             url='http://localhost:11434/api/generate',
             data=json.dumps({
-                "model": self._model_name,
+                "model": ACTIVE_SUMMARIZATION_MODEL,
                 "stream": False,
                 "options": {
                     "temperature": self._summarization_temperature,
@@ -131,6 +127,8 @@ def llm_classifier_with_averaging(
             results.append(1)
         elif result == Prediction.Down:
             results.append(-1)
+        else:
+            results.append(0)
 
     average_result = sum(results) / len(results)
 
@@ -147,9 +145,10 @@ def llm_classifier_with_averaging(
     
 
 def evaluate(datapoint: DataPoint) -> bool:
-    model = LLMModel(model_name=ACTIVE_MODEL)
+    model = LLMModel()
     try:
-        result = llm_classifier_with_averaging(llm_model=model, transcript=datapoint.transcript)
+        # result = llm_classifier_with_averaging(llm_model=model, transcript=datapoint.transcript)
+        result = llm_classifier_with_metasummary(llm_model=model, transcript=datapoint.transcript)
     except Exception as e:
         print("Error occured: ", e)
         return False 
