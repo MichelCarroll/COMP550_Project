@@ -16,7 +16,7 @@ datasets: Datasets = load_data_splits()
 print("Label counts", Counter([d.true_label for d in datasets.development]))
 
 # ACTIVE_MODEL = 'llama2:7b'
-ACTIVE_CLASSIFICATION_MODEL = 'llama:7b-fine-tune-v1'
+ACTIVE_CLASSIFICATION_MODEL = 'llama:7b-fine-tune-v2'
 ACTIVE_SUMMARIZATION_MODEL = 'llama2:7b'
 
 
@@ -45,6 +45,7 @@ class LLMModel:
         )
 
         response = output.json()['response']
+        print(response)
         if Prediction.Up.value in response:
             return Prediction.Up
         elif Prediction.Down.value in response:
@@ -147,8 +148,8 @@ def llm_classifier_with_averaging(
 def evaluate(datapoint: DataPoint) -> bool:
     model = LLMModel()
     try:
-        # result = llm_classifier_with_averaging(llm_model=model, transcript=datapoint.transcript)
-        result = llm_classifier_with_metasummary(llm_model=model, transcript=datapoint.transcript)
+        result = llm_classifier_with_averaging(llm_model=model, transcript=datapoint.transcript)
+        # result = llm_classifier_with_metasummary(llm_model=model, transcript=datapoint.transcript)
     except Exception as e:
         print("Error occured: ", e)
         return False 
