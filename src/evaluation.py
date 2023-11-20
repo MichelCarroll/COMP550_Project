@@ -1,7 +1,7 @@
-from entities import Transcript, Prediction
+from entities import Transcript, StockDirection
 from typing import Optional
 
-def true_stock_direction(transcript: Transcript, standard_deviation_multiples: float) -> Optional[Prediction]:
+def true_stock_direction(transcript: Transcript) -> Optional[StockDirection]:
     before_price = transcript.closing_price_day_before[1] if transcript.closing_price_day_before else None
     after_price = transcript.closing_price_day_after[1] if transcript.closing_price_day_after else None
 
@@ -10,9 +10,6 @@ def true_stock_direction(transcript: Transcript, standard_deviation_multiples: f
     
     return_between_two_days = (after_price - before_price) / after_price
     
-    if return_between_two_days > standard_deviation_multiples * transcript.daily_volatility:
-        return Prediction.Up
-    elif return_between_two_days < -(standard_deviation_multiples * transcript.daily_volatility):
-        return Prediction.Down
-    
-    return Prediction.Same
+    if return_between_two_days > 0:
+        return StockDirection.Up
+    return StockDirection.Down

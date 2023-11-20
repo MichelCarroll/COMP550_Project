@@ -1,11 +1,11 @@
 
-from entities import Transcript, Prediction, DataPoint, Datasets
+from entities import Transcript, StockDirection, AnswerDataPoint, Datasets
 from evaluation import true_stock_direction
 import os 
 from tqdm import tqdm
 import pytz
 from dotenv import load_dotenv
-from typing import Optional
+from typing import Optional, Tuple
 load_dotenv()
 
 utc = pytz.UTC
@@ -26,26 +26,35 @@ def _load_all_transcripts() -> list[Transcript]:
     return all_transcripts
 
 
-def load_data_splits(number_std_devs_threshold: int = 2) -> Datasets:
+def load_data_splits() -> Datasets:
     transcripts: list[Transcript] = _load_all_transcripts()
-    labels: list[Transcript, Optional[Prediction]] = [
-        (t, true_stock_direction(transcript=t, standard_deviation_multiples=number_std_devs_threshold))
-        for t in transcripts
-    ]
-
-    data_points: list[DataPoint] = [DataPoint(transcript=t, true_label=label) for t, label in labels if label]
 
     transcripts.sort(key=lambda t: t.event_time.replace(tzinfo=utc))
 
     training_split_n = int(TRAINING_SET_SPLIT_RATIO * len(transcripts))
     development_split_n = training_split_n + int(DEVELOPMENT_SET_SPLIT_RATIO * len(transcripts))
-    
-    training_set_transcripts = data_points[:training_split_n]
-    development_set_transcripts = data_points[training_split_n:development_split_n]
-    test_set_transcripts = data_points[development_split_n:]
+
+    training_set_transcripts = transcripts[:training_split_n]
+    development_set_transcripts = transcripts[training_split_n:development_split_n]
+    test_set_transcripts = transcripts[development_split_n:]
+
+    def datapoints_from_split(split_transcripts: list[Transcript]) -> list[AnswerDataPoint]:
+
+        labels: list[Tuple[Transcript, Optional[StockDirection]]] = [
+            (t, true_stock_direction(transcript=t))
+            for t in split_transcripts
+        ]
+
+        data_points: list[AnswerDataPoint] = [
+            AnswerDataPoint(answer=answer, true_label=label) 
+            for transcript, label in labels if label 
+            for answer in transcript.answer_texts()
+        ]
+
+        return data_points
 
     return Datasets(
-        training=training_set_transcripts,
-        development=development_set_transcripts,
-        test=test_set_transcripts,
+        training=datapoints_from_split(split_transcripts=training_set_transcripts),
+        development=datapoints_from_split(split_transcripts=development_set_transcripts),
+        test=datapoints_from_split(split_transcripts=test_set_transcripts),
     )
