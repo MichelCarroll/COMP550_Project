@@ -8,13 +8,22 @@ from sklearn.metrics import f1_score, accuracy_score, confusion_matrix
 from random import seed, shuffle
 import os 
 from common.transformer_operations import run_model, load_fine_tuned_model, load_base_model, clean_from_gpu
+import huggingface_hub
+from datasets import load_dataset
 
 load_dotenv()
 
 SEED = os.environ['SEED']
 seed(SEED)
 
-datasets: Datasets = load_data_splits()
+HUGGINGFACE_TOKEN = os.environ['HUGGINGFACE_TOKEN']
+huggingface_hub.login(token=HUGGINGFACE_TOKEN)
+
+dataset_name = 'michelcarroll/llama2-earnings-stock-prediction-fine-tune-v3'
+
+NUM_EXAMPLES_TO_EVALUATE = 100
+
+split_name = 'test'
 
 class LLMModel:
 
@@ -81,10 +90,7 @@ def evaluate(label: str, llm_model: LLMModel, datapoints: list[AnswerDataPoint])
     print(confusion_matrix(y_true=true_labels, y_pred=predictions, labels=["UP", "DOWN"]))
 
 
-NUM_EXAMPLES_TO_EVALUATE = 1000
-
-shuffle(datasets.test)
-answer_datapoints = datasets.test[0:NUM_EXAMPLES_TO_EVALUATE]
+answer_datapoints = load_dataset(dataset_name, split=f"{split_name}[0:{NUM_EXAMPLES_TO_EVALUATE}]")
 
 # from collections import Counter
 # print(Counter([a.true_label.value for a in answer_datapoints]))

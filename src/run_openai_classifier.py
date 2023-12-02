@@ -8,15 +8,23 @@ from sklearn.metrics import f1_score, accuracy_score, confusion_matrix
 from random import seed, shuffle
 import os 
 from openai import OpenAI
+import huggingface_hub
+from datasets import load_dataset
 
 load_dotenv()
 
 SEED = os.environ['SEED']
 seed(SEED)
 
-openai_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+HUGGINGFACE_TOKEN = os.environ['HUGGINGFACE_TOKEN']
+huggingface_hub.login(token=HUGGINGFACE_TOKEN)
 
-datasets: Datasets = load_data_splits()
+openai_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+dataset_name = 'michelcarroll/llama2-earnings-stock-prediction-fine-tune-v3'
+
+NUM_EXAMPLES_TO_EVALUATE = 100
+
+split_name = 'test'
 
 class OpenAIModel:
 
@@ -57,19 +65,19 @@ def filter_answer(answer: str, token_length_low_threshold: int = 20, token_lengt
     text_token_length = llama2_token_length(answer)
     return text_token_length >= token_length_low_threshold and text_token_length <= token_length_high_threshold
 
-def evaluate(label: str, llm_model, datapoints: list[AnswerDataPoint]):
+def evaluate(label: str, llm_model, datapoints):
     predictions: list[StockDirection] = []
     true_labels: list[StockDirection] = []
 
     for datapoint in tqdm(datapoints, desc="Evaluating"):
         try:
-            result = llm_model.classify(text=datapoint.answer)
+            result = llm_model.classify(text=datapoint['completion'])
         except Exception as e:
             print("ERROR", e.args[0])
             continue 
         if result:
             predictions.append(result.value)
-            true_labels.append(datapoint.true_label.value)
+            true_labels.append(datapoint['label'])
 
     print("Prediction Counts: ", Counter(predictions))
             
@@ -83,11 +91,7 @@ def evaluate(label: str, llm_model, datapoints: list[AnswerDataPoint]):
     print(confusion_matrix(y_true=true_labels, y_pred=predictions, labels=["UP", "DOWN"]))
 
 
-NUM_EXAMPLES_TO_EVALUATE = 1000
-
-shuffle(datasets.test)
-answer_datapoints = datasets.test[0:NUM_EXAMPLES_TO_EVALUATE]
-
+answer_datapoints = load_dataset(dataset_name, split=f"{split_name}[0:{NUM_EXAMPLES_TO_EVALUATE}]")
 
 evaluate(
     label="Test 2", 
