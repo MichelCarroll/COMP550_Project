@@ -1,4 +1,4 @@
-from entities import Transcript, StockDirection
+from common.entities import Transcript, StockDirection
 from typing import Optional
 
 def true_stock_direction(transcript: Transcript) -> Optional[StockDirection]:

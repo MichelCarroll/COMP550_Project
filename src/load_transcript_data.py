@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from entities import TextBlock, Transcript
+from common.entities import TextBlock, Transcript
 
 YEARS = [2021]
 

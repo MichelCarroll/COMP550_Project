@@ -1,6 +1,6 @@
 
-from entities import Transcript, StockDirection, AnswerDataPoint, Datasets
-from evaluation import true_stock_direction
+from common.entities import Transcript, StockDirection, AnswerDataPoint, Datasets
+from common.evaluation import true_stock_direction
 import os 
 from tqdm import tqdm
 import pytz
