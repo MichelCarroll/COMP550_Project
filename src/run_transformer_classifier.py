@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from sklearn.metrics import f1_score, accuracy_score, confusion_matrix
 from random import seed, shuffle
 import os 
-from common.transformer_operations import run_model, load_fine_tuned_model, load_base_model
+from common.transformer_operations import run_model, load_fine_tuned_model, load_base_model, clean_from_gpu
 
 load_dotenv()
 
@@ -55,11 +55,13 @@ def filter_answer(answer: str, token_length_low_threshold: int = 20, token_lengt
 def evaluate(label: str, llm_model: LLMModel, datapoints: list[AnswerDataPoint]):
     predictions: list[StockDirection] = []
     true_labels: list[StockDirection] = []
+    misses = 0
 
     for datapoint in tqdm(datapoints, desc="Evaluating"):
         try:
             result = llm_model.classify(text=datapoint.answer)
         except Exception as e:
+            misses += 1
             print("ERROR", e.args[0])
             continue 
         if result:
@@ -68,7 +70,8 @@ def evaluate(label: str, llm_model: LLMModel, datapoints: list[AnswerDataPoint])
 
     print("Prediction Counts: ", Counter(predictions))
             
-    print("="*10)
+    print("="*1)
+    print("Misses", misses)
     print("Results for ", label)
     print("="*10)
     print("N of ", len(datapoints))
@@ -78,15 +81,21 @@ def evaluate(label: str, llm_model: LLMModel, datapoints: list[AnswerDataPoint])
     print(confusion_matrix(y_true=true_labels, y_pred=predictions, labels=["UP", "DOWN"]))
 
 
-NUM_EXAMPLES_TO_EVALUATE = 100
+NUM_EXAMPLES_TO_EVALUATE = 1000
 
-shuffle(datasets.development)
-answer_datapoints = datasets.development[0:NUM_EXAMPLES_TO_EVALUATE]
+shuffle(datasets.test)
+answer_datapoints = datasets.test[0:NUM_EXAMPLES_TO_EVALUATE]
 
+# from collections import Counter
+# print(Counter([a.true_label.value for a in answer_datapoints]))
+# > Counter({'UP': 527, 'DOWN': 473})
 
-model, tokenizer = load_fine_tuned_model('llama2-experiment-r2-a8-e1')
-evaluate(
-    label="Test 2", 
-    llm_model = LLMModel(model=model, tokenizer=tokenizer), 
-    datapoints=answer_datapoints
-)
+for r in [6,8]:
+    model, tokenizer = load_fine_tuned_model(f'llama2-1000examples--r{r}-a8-e1')
+    evaluate(
+        label=f"R{r}", 
+        llm_model = LLMModel(model=model, tokenizer=tokenizer), 
+        datapoints=answer_datapoints
+    )
+    clean_from_gpu(model)
+    clean_from_gpu(tokenizer)

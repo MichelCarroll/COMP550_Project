@@ -83,10 +83,10 @@ def evaluate(label: str, llm_model, datapoints: list[AnswerDataPoint]):
     print(confusion_matrix(y_true=true_labels, y_pred=predictions, labels=["UP", "DOWN"]))
 
 
-NUM_EXAMPLES_TO_EVALUATE = 100
+NUM_EXAMPLES_TO_EVALUATE = 1000
 
-shuffle(datasets.development)
-answer_datapoints = datasets.development[0:NUM_EXAMPLES_TO_EVALUATE]
+shuffle(datasets.test)
+answer_datapoints = datasets.test[0:NUM_EXAMPLES_TO_EVALUATE]
 
 
 evaluate(

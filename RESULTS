@@ -1,0 +1,32 @@
+Results for  R1
+==========
+Misses 6
+N of  1000
+Accuracy Score:  0.5241448692152918
+F1 Score:  0.6266771902131018
+Confusion Matrix
+[[397 128]
+ [345 124]]
+
+
+Results for  R2
+==========
+Misses 4
+N of  1000
+Accuracy Score:  0.5180722891566265
+F1 Score:  0.4482758620689655
+Confusion Matrix
+[[195 331]
+ [149 321]]
+
+
+
+Results for  R4
+==========
+Misses 29
+N of  1000
+Accuracy Score:  0.5221421215242018
+F1 Score:  0.6139767054908486
+Confusion Matrix
+[[369 144]
+ [320 138]]

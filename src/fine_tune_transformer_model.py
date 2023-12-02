@@ -16,7 +16,12 @@ n_examples_to_train = 1000
 huggingface_hub.login(token=HUGGINGFACE_TOKEN)
 dataset = load_dataset(dataset_name, split=f"train[0:{n_examples_to_train}]")
 
-for r in [1,2,4,6,8,10]:
+# from collections import Counter
+# print(Counter(dataset['label']))
+# > Counter({'UP': 500, 'DOWN': 500})
+
+
+for r in [2,4,6,8,10]:
     train_and_save_fine_tuned_model(
         dataset=dataset,
         fine_tuning_parameters=FineTuningParameters(
