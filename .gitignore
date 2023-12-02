@@ -1,3 +1,5 @@
+_model_scratch_space/**
+fine_tuned_models/**
 **/__pycache__
 load-transcripts
 eod_data_cache/**

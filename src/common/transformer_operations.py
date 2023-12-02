@@ -14,8 +14,8 @@ HUGGINGFACE_TOKEN = os.environ['HUGGINGFACE_TOKEN']
 class FineTuningParameters(BaseModel):
     adapter_id_prefix: str
     base_model_name: str
-    lora_rank: int = 64
-    lora_alpha: int  = 16
+    lora_rank: int = 2
+    lora_alpha: int  = 8
     epochs: int = 1
     start_from_checkmarks: bool = False
 
@@ -238,7 +238,7 @@ def train_and_save_fine_tuned_model(dataset: Dataset, fine_tuning_parameters: Fi
         r=lora_r,
         bias="none",
         task_type="CAUSAL_LM",
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj","gate_proj","up_proj","down_proj"]
+        target_modules=["q_proj", "k_proj", "v_proj", "o_proj"]
     )
 
     # Set training parameters

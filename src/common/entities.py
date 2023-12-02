@@ -3,6 +3,10 @@ from typing import List, Optional, Tuple
 from datetime import date, datetime
 from enum import Enum
 from transformers import LlamaTokenizer
+
+from common.transformer_operations import login_to_hub
+
+login_to_hub()
  
 tokenizer = LlamaTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
 

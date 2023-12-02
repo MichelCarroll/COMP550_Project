@@ -1,3 +1,4 @@
+from collections import Counter
 from common.entities import StockDirection, Datasets, AnswerDataPoint
 from common.data_loading import load_data_splits
 from tqdm import tqdm
@@ -35,7 +36,7 @@ class LLMModel:
             raise Exception(f"Response did not contain one of the classes: {response}")
 
     def _transformer_request(self, text: str) -> str:
-        prompt = f"""[INST] <<SYS>>You are a financial analyst, predicting which direction the stock price will go following this answer from the Q/A section of an earnings call. Be as critical and skeptical as possible. Respond with {StockDirection.Up.value} or {StockDirection.Down.value}<</SYS>> {text}[/INST]
+        prompt = f"""[INST] <<SYS>>You are a financial analyst, predicting which direction the stock price will go following this answer from the Q/A section of an earnings call. Respond with {StockDirection.Up.value} or {StockDirection.Down.value}<</SYS>> {text}[/INST]
 Direction (UP or DOWN): """
         response = run_model(
             model=self._model, 
@@ -65,6 +66,8 @@ def evaluate(label: str, llm_model: LLMModel, datapoints: list[AnswerDataPoint])
             predictions.append(result.value)
             true_labels.append(datapoint.true_label.value)
 
+    print("Prediction Counts: ", Counter(predictions))
+            
     print("="*10)
     print("Results for ", label)
     print("="*10)
@@ -81,42 +84,9 @@ shuffle(datasets.development)
 answer_datapoints = datasets.development[0:NUM_EXAMPLES_TO_EVALUATE]
 
 
-# model, tokenizer = load_fine_tuned_model('')
-# model, tokenizer = load_base_model('')
-
+model, tokenizer = load_fine_tuned_model('llama2-experiment-r2-a8-e1')
 evaluate(
-    label="Test", 
+    label="Test 2", 
     llm_model = LLMModel(model=model, tokenizer=tokenizer), 
     datapoints=answer_datapoints
 )
-
-
-# evaluate(
-#     label="Base Llama2 13B (Chat)", 
-#     llm_model = LLMModel(model='meta/llama-2-13b-chat:f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d', model_type=LLMModelType.Replicate), 
-#     datapoints=answer_datapoints
-# )
-
-# evaluate(
-#     label="Base Llama2 70B (Chat)", 
-#     llm_model = LLMModel(model='meta/llama-2-70b-chat:02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3', model_type=LLMModelType.Replicate), 
-#     datapoints=answer_datapoints
-# )
-
-# evaluate(
-#     label="Base Llama2 7B", 
-#     llm_model = LLMModel(model='llama2:7b', model_type=LLMModelType.Ollama), 
-#     datapoints=answer_datapoints
-# )
-
-# evaluate(
-#     label="Base Mistral (instruct) 7B", 
-#     llm_model = LLMModel(model='mistral', model_type=LLMModelType.Ollama), 
-#     datapoints=answer_datapoints
-# )
-
-# evaluate(
-#     label="Fine-Tuned Llama2 7B (1000 examples)", 
-#     llm_model = LLMModel(model='llama:7b-fine-tune-v4', model_type=LLMModelType.Ollama), 
-#     datapoints=answer_datapoints
-# )

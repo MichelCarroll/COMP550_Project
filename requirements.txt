@@ -17,3 +17,4 @@ bitsandbytes==0.41.2.post2
 transformers==4.35.2
 trl==0.4.7
 torch==2.1.0
+sentencepiece==0.1.99
