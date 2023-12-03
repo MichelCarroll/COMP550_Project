@@ -26,9 +26,8 @@ def huggingface_dataset(label: str, datapoints: list[AnswerDataPoint], balance_c
     print(f"Preparing split '{label}'")
 
     completion_and_datapoint = [
-        (example, f"""[INST] <<SYS>>You are a financial analyst, predicting which direction the stock price will go following this answer from the Q/A section of an earnings call. Be as critical and skeptical as possible. Respond with {StockDirection.Up.value} or {StockDirection.Down.value}<</SYS>> {example.answer}[/INST]
-    Direction (UP or DOWN): {example.true_label.value if include_label else ""}
-    """) 
+        (example, f"""[INST] <<SYS>>You are a financial analyst, predicting which direction the stock price will go following this answer from the Q/A section of an earnings call. Respond with {StockDirection.Up.value} or {StockDirection.Down.value}<</SYS>> {example.answer}[/INST]
+    Direction (UP or DOWN):{f" {example.true_label.value}" if include_label else ""}""") 
         for example in datapoints
     ]
 
@@ -62,4 +61,4 @@ dataset_dict = DatasetDict({
     "test": test_split,
 })
 
-dataset_dict.push_to_hub("michelcarroll/llama2-earnings-stock-prediction-fine-tune-v3")
+dataset_dict.push_to_hub("michelcarroll/llama2-earnings-stock-prediction-fine-tune-binary")

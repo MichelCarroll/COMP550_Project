@@ -9,6 +9,7 @@ from random import seed, shuffle
 import os 
 from openai import OpenAI
 import huggingface_hub
+import json
 from datasets import load_dataset
 
 load_dotenv()
@@ -20,9 +21,9 @@ HUGGINGFACE_TOKEN = os.environ['HUGGINGFACE_TOKEN']
 huggingface_hub.login(token=HUGGINGFACE_TOKEN)
 
 openai_client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
-dataset_name = 'michelcarroll/llama2-earnings-stock-prediction-fine-tune-v3'
+dataset_name = 'michelcarroll/llama2-earnings-stock-prediction-fine-tune-binary'
 
-NUM_EXAMPLES_TO_EVALUATE = 100
+NUM_EXAMPLES_TO_EVALUATE = 1000
 
 split_name = 'test'
 
@@ -48,17 +49,37 @@ class OpenAIModel:
             messages=[
                 {
                     "role": "system",
-                    "content": f"You are a binary classifier with expert financial analyst knowledge, predicting which direction the stock price will go following this answer from the Q/A section of an earnings call. Explain your reasoning, a line break, then either UP if you predict the stock will go up, or DOWN if you predict it will go down. You must absolutely make a prediction – don't answer with N/A.",
+                    "content": f"You are a binary classifier with expert financial analyst knowledge, predicting which direction the stock price will go following this answer from the Q/A section of an earnings call. Output either UP if you predict the stock will go up, or DOWN if you predict it will go down. You must absolutely make a prediction – don't answer with N/A.",
                 },
                 {
                     "role": "user",
                     "content": f"The answer from the earnings transcript is: {text}",
                 }
             ],
+            functions = [{
+                "name": "predict",
+                "description": "Label the correct class",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        # 'reasoning': {
+                        #     "type": "string"
+                        # },
+                        'prediction': {
+                            "type": "string",
+                            "enum": ["UP", "DOWN"]
+                        },
+                    },
+                    "required": [ "prediction"]
+                }
+            }],
+            function_call={'name': 'predict'},
             model=self._model,
+            timeout=15
         )
-        response_lines = chat_completion.choices[0].message.content.strip().split('\n')
-        return response_lines[-1].strip()
+        arguments = json.loads(chat_completion.choices[0].message.function_call.arguments)
+        # print(arguments['reasoning'])
+        return arguments['prediction']
 
 
 def filter_answer(answer: str, token_length_low_threshold: int = 20, token_length_high_threshold: int = 1000) -> bool:
@@ -94,13 +115,7 @@ def evaluate(label: str, llm_model, datapoints):
 answer_datapoints = load_dataset(dataset_name, split=f"{split_name}[0:{NUM_EXAMPLES_TO_EVALUATE}]")
 
 evaluate(
-    label="Test 2", 
-    llm_model = OpenAIModel(model='gpt-3.5-turbo'), 
-    datapoints=answer_datapoints
-)
-
-evaluate(
-    label="Test 2", 
+    label="GPT 4 with CoT", 
     llm_model = OpenAIModel(model='gpt-4'), 
     datapoints=answer_datapoints
 )

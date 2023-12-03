@@ -1,32 +1,138 @@
-Results for  R1
+
+
+Results for  base model
 ==========
-Misses 6
+Misses 1
 N of  1000
-Accuracy Score:  0.5241448692152918
-F1 Score:  0.6266771902131018
+Accuracy Score:  0.5375375375375375
+F1 Score:  0.3722826086956522
 Confusion Matrix
-[[397 128]
- [345 124]]
-
-
-Results for  R2
+[[137 363]
+ [ 99 400]]
+ 
+ 
 ==========
-Misses 4
-N of  1000
-Accuracy Score:  0.5180722891566265
-F1 Score:  0.4482758620689655
-Confusion Matrix
-[[195 331]
- [149 321]]
-
-
-
-Results for  R4
+Results for  GPT 4
 ==========
-Misses 29
+Misses 0
 N of  1000
-Accuracy Score:  0.5221421215242018
-F1 Score:  0.6139767054908486
+Accuracy Score:  0.533
+F1 Score:  0.6187755102040816
 Confusion Matrix
-[[369 144]
- [320 138]]
+[[379 121]
+ [346 154]]
+ 
+ 
+ Results for  fine-tuned r10
+==========
+Misses 1
+N of  1000
+Accuracy Score:  0.5345345345345346
+F1 Score:  0.3775100401606425
+Confusion Matrix
+[[141 359]
+ [106 393]]
+ 
+ =
+Results for  fine-tuned r50
+==========
+Misses 0
+N of  1000
+Accuracy Score:  0.533
+F1 Score:  0.6218623481781377
+Confusion Matrix
+[[384 116]
+ [351 149]]
+ 
+ Results for  fine-tuned r100
+==========
+Misses 0
+N of  1000
+Accuracy Score:  0.517
+F1 Score:  0.5174825174825175
+Confusion Matrix
+[[259 241]
+ [242 258]]
+
+Results for  fine-tuned r500
+==========
+Misses 0
+N of  1000
+Accuracy Score:  0.486
+F1 Score:  0.6186943620178043
+Confusion Matrix
+[[417  83]
+ [431  69]]
+ Misses 0
+N of  1000
+Accuracy Score:  0.499
+F1 Score:  0.6275092936802973
+Confusion Matrix
+[[422  78]
+ [423  77]]
+ Misses 0
+N of  1000
+Accuracy Score:  0.518
+F1 Score:  0.6497093023255814
+Confusion Matrix
+[[447  53]
+ [429  71]]
+ Misses 0
+N of  1000
+Accuracy Score:  0.496
+F1 Score:  0.6283185840707965
+Confusion Matrix
+[[426  74]
+ [430  70]]
+ Misses 0
+N of  1000
+Accuracy Score:  0.526
+F1 Score:  0.6524926686217007
+Confusion Matrix
+[[445  55]
+ [419  81]]
+ 
+ (0.486 + 0.499 + 0.518 + 0.496 + 0.526) / 5
+0.5050000000000001
+
+ 
+Results for  fine-tuned r1000
+==========
+Misses 0
+N of  1000
+Accuracy Score:  0.499
+F1 Score:  0.386780905752754
+Confusion Matrix
+[[158 342]
+ [159 341]]
+ Misses 0
+N of  1000
+Accuracy Score:  0.515
+F1 Score:  0.4287396937573616
+Confusion Matrix
+[[182 318]
+ [167 333]]
+Misses 0
+N of  1000
+Accuracy Score:  0.525
+F1 Score:  0.4214372716199756
+Confusion Matrix
+[[173 327]
+ [148 352]]
+Misses 0
+N of  1000
+Accuracy Score:  0.524
+F1 Score:  0.42788461538461536
+Confusion Matrix
+[[178 322]
+ [154 346]]
+ Misses 0
+N of  1000
+Accuracy Score:  0.499
+F1 Score:  0.3956574185765983
+Confusion Matrix
+[[164 336]
+ [165 335]]
+ 
+ (0.499 +  0.515 + 0.525 + 0.524 + 0.499) / 5
+0.5124000000000001
