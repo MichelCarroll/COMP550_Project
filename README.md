@@ -11,7 +11,7 @@ Requirements:
 
 Run `python src/run_openai_classifier.py`
 
-## Evaluating a transformers model 
+## Evaluating a transformer model 
 
 Requirements:
 - `HUGGINGFACE_TOKEN` environment variable required
@@ -19,7 +19,7 @@ Requirements:
 
 Run `python src/fine_tune_transformer_model.py`
 
-## Fine-tuning a transformers model
+## Fine-tuning a transformer model
 
 Requirements:
 - `HUGGINGFACE_TOKEN` environment variable required
