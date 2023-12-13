@@ -1,20 +1,19 @@
 import json
-import pandas as pd
-from bs4 import BeautifulSoup
-import requests
-import re
-from typing import List, Optional, Tuple
-from datetime import date, timedelta
-from dateutil.parser import parse as parse_datetime
-from tenacity import retry, stop_after_attempt, wait_random_exponential
-
-import requests
 import os
+import re
+from datetime import date, timedelta
+from typing import Optional, Tuple
+
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+from dateutil.parser import parse as parse_datetime
 from dotenv import load_dotenv
+from tenacity import retry, stop_after_attempt, wait_random_exponential
 
 load_dotenv()
 
-from common.entities import TextBlock, Transcript
+from .common.entities import TextBlock, Transcript
 
 YEARS = [2021]
 
@@ -29,14 +28,16 @@ def transcript_urls_from_sitemap(year: int, month: int) -> list[str]:
     earning_transcript_links = [url.text for url in soup.find_all('loc') if '/earnings/call-transcripts/' in url.text]
     return earning_transcript_links
 
+
 def all_transcript_urls_from_sitemap(years: list[int]) -> list[str]:
     all_transcript_urls = [
         l 
         for year in years 
-        for month in range(1,13) 
+        for month in range(1, 13)
         for l in transcript_urls_from_sitemap(year=year, month=month)
     ]
     return all_transcript_urls
+
 
 @retry(
     wait=wait_random_exponential(min=5, max=20),
@@ -47,6 +48,7 @@ def ticker_eod_data(ticker: str) -> dict:
     response = requests.request("GET", url, headers={}, data={})
     return response.json()
 
+
 def cached_ticker_eod_data(ticker: str) -> dict:
     file_path = f'eod_data_cache/{ticker}.json'
     if os.path.exists(file_path):
@@ -56,6 +58,7 @@ def cached_ticker_eod_data(ticker: str) -> dict:
     with open(file_path, 'w') as f:
         f.write(json.dumps(data))
     return data
+
 
 @retry(
     wait=wait_random_exponential(min=5, max=20),
@@ -79,7 +82,6 @@ def transcript_from_url(url: str) -> Transcript:
 
     quarter_result = re.search(r"\)\ (.*)\ Earnings", transcript.headline)
     transcript.fiscal_quarter = quarter_result.group(1) if quarter_result else None
-    transcript.fiscal_quarter
 
     text_blocks = []
 
@@ -141,6 +143,7 @@ def transcript_from_url(url: str) -> Transcript:
         
     return transcript
 
+
 def clean_filename(url: str) -> str:
     segment = url.strip('/').split('/')[-1]
     cleaned_segment = re.sub(r'[^a-zA-Z0-9\-]', '', segment)
@@ -156,6 +159,7 @@ def save_transcript_from_url(url: str, skip_if_exists: bool = True):
     transcript = transcript_from_url(url=url)
     with open(file_path, 'w') as f:
         f.write(transcript.model_dump_json())
+
 
 print("Pulling transcript URLs from sitemap...")
 transcript_urls = all_transcript_urls_from_sitemap(years=YEARS)

@@ -1,11 +1,11 @@
-
-from common.entities import Transcript, StockDirection, AnswerDataPoint, Datasets
-from common.evaluation import true_stock_direction
+from .entities import Transcript, StockDirection, AnswerDataPoint, Datasets
+from .evaluation import true_stock_direction
 import os 
 from tqdm import tqdm
 import pytz
 from dotenv import load_dotenv
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Iterator
+
 load_dotenv()
 
 utc = pytz.UTC
@@ -16,18 +16,17 @@ TEST_SET_SPLIT_RATIO = 1.0 - TRAINING_SET_SPLIT_RATIO - DEVELOPMENT_SET_SPLIT_RA
 
 TRANSCRIPTS_DATA_PATH = 'transcript_data'
 
-def _load_all_transcripts() -> list[Transcript]:
-    all_transcripts: list[Transcript] = []
+
+def _load_all_transcripts() -> Iterator[Transcript]:
     for file in tqdm(os.listdir(TRANSCRIPTS_DATA_PATH), desc="Loading transcripts into memory"):
         with open(f"{TRANSCRIPTS_DATA_PATH}/{file}") as f:
             if not file.endswith('.json'):
                 continue 
-            all_transcripts.append(Transcript.model_validate_json(f.read()))
-    return all_transcripts
+            yield Transcript.model_validate_json(f.read())
 
 
 def load_data_splits() -> Datasets:
-    transcripts: list[Transcript] = _load_all_transcripts()
+    transcripts = list(_load_all_transcripts())
 
     transcripts.sort(key=lambda t: t.event_time.replace(tzinfo=utc))
 
