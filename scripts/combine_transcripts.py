@@ -9,12 +9,7 @@ import json
 
 def load_transcript(path: Path):
     with path.open('r') as transcript_file:
-        try:
-            return json.load(transcript_file)
-        except json.decoder.JSONDecodeError:
-            logging.error('Un-decodable file: %s', path)
-            logging.error('Content of the file:')
-            logging.error(transcript_file.read())
+        return json.load(transcript_file)
 
 
 if __name__ == '__main__':
@@ -38,7 +33,7 @@ if __name__ == '__main__':
             bundle.append(transcript)
 
     logging.info('Sorting data')
-    bundle.sort(key=lambda t: t['content'])
+    bundle.sort(key=lambda t: t['date'])
     bundle_path = transcript_folder / '_bundle.json'
 
     logging.info('Saving data')
