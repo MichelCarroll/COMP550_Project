@@ -25,3 +25,7 @@ notebook~=7.0.6
 chardet~=4.0.0
 nltk
 numpy
+
+requests~=2.31.0
+matplotlib
+joblib
