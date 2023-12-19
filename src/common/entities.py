@@ -4,16 +4,18 @@ from datetime import date, datetime
 from enum import Enum
 from transformers import LlamaTokenizer
 
-from common.transformer_operations import login_to_hub
+from .transformer_operations import login_to_hub
 
 login_to_hub()
  
 tokenizer = LlamaTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
 
+
 class TextBlock(BaseModel):
     section: str
     speaker: str
     text: str
+
 
 class Transcript(BaseModel):
     url: str
@@ -44,9 +46,11 @@ class Transcript(BaseModel):
 
         return answer_texts
 
+
 class StockDirection(Enum):
     Up = "UP"
     Down = "DOWN"
+
 
 class AnswerDataPoint(BaseModel):
     answer: str

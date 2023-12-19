@@ -1,3 +1,8 @@
+This is the code used for the COMP 550 project on earnings transcripts. We included 2 sample datapoints from our dataset: 
+- `sample-scraped-full-transcript.json`: metadata for our full transcript text extraction dataset
+- `sample-scraped-full-transcript.txt`: the full transcript text
+- `sample-scraped-text-block-transcript.json`: from our separate dataset of text block extractions
+
 ## Loading Dataset
 
 1. Create a `.env` file with an API key from https://eodhd.com/ as the `EOD_API_KEY` environment variable.
