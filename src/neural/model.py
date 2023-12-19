@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torch.nn import functional as F  # noqa
-from transformers import BertModel, BertTokenizerFast
+from transformers import BertModel, BertTokenizerFast, BatchEncoding
 
 
 class NeuralNet(nn.Module):
@@ -41,20 +41,21 @@ class NeuralNet(nn.Module):
     def tokenize(self, *args, **kwargs):
         return self.bert_tokenizer.tokenize(*args, **kwargs)
 
-    def _encode_transcript(self, transcript: list[str]) -> torch.Tensor:
+    def _encode_transcript(self, transcript: BatchEncoding) -> torch.Tensor:
         """
         Encode the transcript to the embedding space of the model
         :param transcript: The transcript to encode as a list of paragraphs
         :return: Transcript embedding, size lstm_output_size
         """
-        input_seq = self.bert_tokenizer(transcript, return_tensors="pt", padding=True)
+        # input_seq = self.bert_tokenizer(transcript, return_tensors="pt", padding=True)
+        input_seq = transcript
         output = self.fin_bert(**input_seq)
         cls_tokens = output.last_hidden_state[:, 0]  # sequence length (paras) x hidden size
         lstm_input = cls_tokens.flip(0)  # Invert sequence to perform bottom-up then to-down LSTM
         _, (h_n, _) = self.lstm(lstm_input, (self.h_0, self.c_0))
         return h_n.view(-1)
 
-    def forward(self, batch: list[list[str]]) -> torch.Tensor:
+    def forward(self, batch: list[BatchEncoding]) -> torch.Tensor:
         """
         Forward pass of the Model
         :param batch: input as (BatchSize, Paras)
