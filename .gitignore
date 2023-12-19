@@ -13,3 +13,7 @@ llama.cpp
 .*
 *.gguf
 augmented_transcipt_data/**
+.venv
+transcript_data
+err_dumps
+eod_data_cache

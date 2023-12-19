@@ -11,6 +11,7 @@ load_dotenv()
 
 HUGGINGFACE_TOKEN = os.environ['HUGGINGFACE_TOKEN']
 
+
 class FineTuningParameters(BaseModel):
     adapter_id_prefix: str
     base_model_name: str
@@ -29,8 +30,10 @@ class FineTuningParameters(BaseModel):
 DATASET_TEXT_FIELD = "completion"
 DEVICE_MAP = {"": 0}
 
+
 def login_to_hub():
     huggingface_hub.login(token=HUGGINGFACE_TOKEN)
+
 
 def run_model(model, tokenizer, max_new_tokens: int, prompt: str, return_full_text: bool) -> str:
     from transformers import pipeline
@@ -42,7 +45,8 @@ def run_model(model, tokenizer, max_new_tokens: int, prompt: str, return_full_te
         max_new_tokens=max_new_tokens
     )
     return generator(prompt, return_full_text=return_full_text)[0]['generated_text']
-    
+
+
 def load_fine_tuned_model(fine_tuned_adapter_id: str):
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -71,6 +75,7 @@ def load_fine_tuned_model(fine_tuned_adapter_id: str):
     tokenizer.padding_side = "right"
 
     return model, tokenizer
+
 
 def load_base_model(base_model_name: str):
     import torch
@@ -285,6 +290,7 @@ def train_and_save_fine_tuned_model(dataset: Dataset, fine_tuning_parameters: Fi
         f.write(f"Parameters: {fine_tuning_parameters.json()}\n")
         f.write(f"Duration: {training_duration}\n")
         f.write(json.dumps(trainer.state.log_history))
+
 
 def clean_from_gpu(obj):
     del obj
