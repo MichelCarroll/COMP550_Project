@@ -1,13 +1,13 @@
-from collections import UserDict
-from functools import total_ordering
 import json
 import re
 import zipfile
 from bisect import bisect_left, bisect_right
+from collections import UserDict
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime
+from functools import total_ordering
 from pathlib import Path
-from typing import overload, Iterable, TypedDict
+from typing import overload, Iterable
 
 
 @dataclass
@@ -55,6 +55,9 @@ class TranscriptView(UserDict):
 class MotleyFoolDataset:
     def __init__(self, dataset_path):
         self.dataset_path = Path(dataset_path)
+
+        if not self.dataset_path.exists():
+            raise ValueError(f'Dataset does not exist at {dataset_path}')
 
         if self.dataset_path.suffix == '.zip':
             self.dataset_path = zipfile.Path(self.dataset_path)
