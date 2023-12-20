@@ -13,25 +13,19 @@ Authors:
 
 ## Prompt template for the Llama2 model
 
-```
-[INST] <<SYS>>You are a financial analyst, predicting which direction the stock price will go following this answer from the Q/A section of an earnings call. Respond with UP or DOWN<</SYS>> {text}[/INST]
+[INST] <\<SYS>>You are a financial analyst, predicting which direction the stock price will go following this answer from the Q/A section of an earnings call. Respond with UP or DOWN<\</SYS>> {text}[/INST]
 Direction (UP or DOWN):
-```
 
 ## Full sample completion (Llama2 model)
 
-```
-[INST] <<SYS>>You are a financial analyst, predicting which direction the stock price will go following this answer from the Q/A section of an earnings call. Respond with UP or DOWN<</SYS>> Well, I wouldn't say necessarily front-end loaded. I mean, we just printed Q1 at $300 million -- approximately $380 million acquired. And so I think we can cut that up for the remaining three quarters. I don't anticipate Q2 to be very different in terms of assets that we're acquiring. Volume may be down or at that level. So we'll see where things close. Again, we can't predict whether something is going to close on July 27, 28th or July 2. It won't close on July four because everything is closed. But our business, the last outstanding issue generally to close an asset in our business is reliant upon the tenant to provide estoppels. And so things can cross quarters.\nWe have ideas that will close this quarter and then everything can get jumbled around. ARC gives us the visibility to move things around in those corners as we have those third-party respondents, diligence, outstanding estoppels and such like that. And so that provides a level of transparency, visibility for us. But closing and the timing of transactions really isn't relying necessarily upon just our operations or execution here.[/INST]
+[INST] <\<SYS>>You are a financial analyst, predicting which direction the stock price will go following this answer from the Q/A section of an earnings call. Respond with UP or DOWN<\</SYS>> Well, I wouldn't say necessarily front-end loaded. I mean, we just printed Q1 at $300 million -- approximately $380 million acquired. And so I think we can cut that up for the remaining three quarters. I don't anticipate Q2 to be very different in terms of assets that we're acquiring. Volume may be down or at that level. So we'll see where things close. Again, we can't predict whether something is going to close on July 27, 28th or July 2. It won't close on July four because everything is closed. But our business, the last outstanding issue generally to close an asset in our business is reliant upon the tenant to provide estoppels. And so things can cross quarters.\nWe have ideas that will close this quarter and then everything can get jumbled around. ARC gives us the visibility to move things around in those corners as we have those third-party respondents, diligence, outstanding estoppels and such like that. And so that provides a level of transparency, visibility for us. But closing and the timing of transactions really isn't relying necessarily upon just our operations or execution here.[/INST]
 Direction (UP or DOWN): DOWN
-```
 
 ## Prompt for GPT-4
 
-```
 system message=You are a binary classifier with expert financial analyst knowledge, predicting which direction the stock price will go following this answer from the Q/A section of an earnings call. Output either UP if you predict the stock will go up, or DOWN if you predict it will go down. You must absolutely make a prediction – don't answer with N/A.
 
 user message=The answer from the earnings transcript is: {text}
-```
 
 Output function call JSON schema: 
 ```
